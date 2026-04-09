@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Mobile Infotainment Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="portraitBlocker" class="portrait-blocker" aria-hidden="true">
+      <p>Please rotate your device to landscape mode.</p>
+    </div>
+
+    <main class="dashboard" aria-label="Vehicle infotainment dashboard">
+      <aside class="sidebar card">
+        <div class="brand">🚗</div>
+        <button class="nav-btn active" aria-label="Home">🏠</button>
+        <button class="nav-btn" aria-label="Trip">🧭</button>
+        <button class="nav-btn" aria-label="Calls">📞</button>
+        <button class="nav-btn" aria-label="Settings">⚙️</button>
+      </aside>
+
+      <section class="content">
+        <header class="top card">
+          <div>
+            <h1>Hello, Driver</h1>
+            <p>
+              Mode:
+              <strong id="drivingMode">Focused Driving</strong>
+            </p>
+          </div>
+          <div class="header-meta">
+            <div class="clock">
+              <div id="clockTime">--:--</div>
+              <small id="clockDate">---</small>
+            </div>
+            <div class="weather-now">
+              <span id="weatherIcon">⛅</span>
+              <strong id="weatherTemp">--°C</strong>
+            </div>
+          </div>
+        </header>
+
+        <div class="middle-grid">
+          <section class="trip card">
+            <div class="section-title">
+              <h2>Last Trip</h2>
+              <small id="tripStatus">Ready</small>
+            </div>
+            <div class="map-wrap">
+              <iframe
+                id="mapFrame"
+                title="Current location map"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                src="https://maps.google.com/maps?q=0,0&z=14&output=embed"
+              ></iframe>
+              <div class="coord-text" id="coordText">Lat: --, Lng: --</div>
+            </div>
+            <div class="trip-stats">
+              <div><span id="tripDuration">00:00</span><small>Duration</small></div>
+              <div><span id="tripDistance">0.00 km</span><small>Distance</small></div>
+              <div><span id="avgSpeed">0 km/h</span><small>Avg Speed</small></div>
+            </div>
+          </section>
+
+          <section class="live card">
+            <div class="section-title">
+              <h2>Live Metrics</h2>
+              <small class="pill" id="gpsState">GPS OFF</small>
+            </div>
+            <div class="speedometer" role="status" aria-live="polite">
+              <div class="speed-value" id="speedValue">0</div>
+              <div class="speed-unit">km/h</div>
+            </div>
+            <div class="live-footer">
+              <div><span id="maxSpeed">0 km/h</span><small>Max</small></div>
+              <div><span id="heading">N</span><small>Compass</small></div>
+              <div><span id="accuracy">-- m</span><small>Accuracy</small></div>
+            </div>
+            <div class="actions">
+              <button id="startBtn" class="btn primary">Start Trip</button>
+              <button id="stopBtn" class="btn" disabled>Stop</button>
+            </div>
+          </section>
+        </div>
+
+        <section class="commands card">
+          <h2>Quick Commands</h2>
+          <div class="cmd-grid">
+            <button class="cmd">Navigate Home</button>
+            <button class="cmd" id="playMusicBtn">Play Music</button>
+            <button class="cmd" id="callContactBtn">Call Contact</button>
+            <button class="cmd">Find Charging</button>
+          </div>
+        </section>
+      </section>
+
+      <aside class="alerts card">
+        <h2>Forecast & Alerts</h2>
+        <div class="weather-location" id="weatherLocation">Location: --</div>
+        <div id="forecast" class="forecast"></div>
+        <div class="alert-box warning" id="weatherAlert">Waiting for weather data…</div>
+      </aside>
+    </main>
+
+    <section id="callPanel" class="call-panel" aria-label="Recent calls" aria-hidden="true">
+      <div class="call-header">
+        <h3>Recent Calls</h3>
+        <button id="closeCallsBtn" class="btn">Close</button>
+      </div>
+      <ul id="recentCalls" class="call-list"></ul>
+    </section>
+
+    <script src="app.js"></script>
+  </body>
+</html>
