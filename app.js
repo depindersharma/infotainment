@@ -42,6 +42,11 @@ const contacts = [
   { name: 'Roadside Assist', number: '+1-800-222-4357', at: 'Yesterday, 11:04' },
 ];
 
+function updateMapAndCoords(latitude, longitude, source = 'GPS') {
+  ui.coordText.textContent = `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)} (${source})`;
+  ui.mapFrame.src = `https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`;
+}
+
 function updateClock() {
   const now = new Date();
   ui.clockTime.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -102,8 +107,7 @@ function onPosition(position) {
   ui.avgSpeed.textContent = `${Math.round(avgSpeed)} km/h`;
   ui.maxSpeed.textContent = `${Math.round(state.maxSpeedKmh)} km/h`;
   ui.gpsState.textContent = 'GPS ON';
-  ui.coordText.textContent = `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`;
-  ui.mapFrame.src = `https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`;
+  updateMapAndCoords(latitude, longitude, 'GPS');
 }
 
 function onPositionError(err) {
@@ -189,6 +193,7 @@ function initWeatherFromLocation() {
 
   navigator.geolocation.getCurrentPosition(async ({ coords }) => {
     try {
+      updateMapAndCoords(coords.latitude, coords.longitude, 'GPS');
       await loadWeather(coords.latitude, coords.longitude);
     } catch {
       ui.weatherAlert.textContent = 'Weather service unavailable right now.';
@@ -200,6 +205,41 @@ function initWeatherFromLocation() {
     maximumAge: 60_000,
     timeout: 10_000,
   });
+}
+
+async function initMapLocationFallback() {
+  // Geolocation needs HTTPS on mobile. If not available/denied, fallback to IP-based approx location.
+  if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+    ui.coordText.textContent = 'Location blocked: use HTTPS and allow location permission.';
+  } else {
+    ui.coordText.textContent = 'Locating… allow GPS permission if prompted.';
+  }
+
+  if (!navigator.geolocation) {
+    ui.coordText.textContent = 'GPS not supported. Trying approximate location…';
+  } else {
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => updateMapAndCoords(coords.latitude, coords.longitude, 'GPS'),
+      () => {
+        ui.coordText.textContent = 'GPS denied/unavailable. Trying approximate location…';
+      },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+    );
+  }
+
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+      if (ui.coordText.textContent.includes('Lat: --') || ui.coordText.textContent.includes('approximate')) {
+        updateMapAndCoords(data.latitude, data.longitude, 'Approx');
+      }
+    }
+  } catch {
+    if (ui.coordText.textContent.includes('Lat: --')) {
+      ui.coordText.textContent = 'Unable to fetch location. Enable GPS permission.';
+    }
+  }
 }
 
 function launchSpotify() {
@@ -265,10 +305,4 @@ setInterval(() => {
 }, 1000);
 
 initWeatherFromLocation();
-
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(({ coords }) => {
-    ui.coordText.textContent = `Lat: ${coords.latitude.toFixed(5)}, Lng: ${coords.longitude.toFixed(5)}`;
-    ui.mapFrame.src = `https://maps.google.com/maps?q=${coords.latitude},${coords.longitude}&z=15&output=embed`;
-  });
-}
+initMapLocationFallback();
