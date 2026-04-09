@@ -18,6 +18,12 @@ const ui = {
   startBtn: document.getElementById('startBtn'),
   stopBtn: document.getElementById('stopBtn'),
   playMusicBtn: document.getElementById('playMusicBtn'),
+  callContactBtn: document.getElementById('callContactBtn'),
+  closeCallsBtn: document.getElementById('closeCallsBtn'),
+  callPanel: document.getElementById('callPanel'),
+  recentCalls: document.getElementById('recentCalls'),
+  mapFrame: document.getElementById('mapFrame'),
+  coordText: document.getElementById('coordText'),
 };
 
 const state = {
@@ -28,6 +34,13 @@ const state = {
   prevPoint: null,
   maxSpeedKmh: 0,
 };
+
+const contacts = [
+  { name: 'Home', number: '+1-555-0101', at: 'Today, 08:42' },
+  { name: 'Office', number: '+1-555-0118', at: 'Today, 07:55' },
+  { name: 'Alex', number: '+1-555-0133', at: 'Yesterday, 18:20' },
+  { name: 'Roadside Assist', number: '+1-800-222-4357', at: 'Yesterday, 11:04' },
+];
 
 function updateClock() {
   const now = new Date();
@@ -89,6 +102,8 @@ function onPosition(position) {
   ui.avgSpeed.textContent = `${Math.round(avgSpeed)} km/h`;
   ui.maxSpeed.textContent = `${Math.round(state.maxSpeedKmh)} km/h`;
   ui.gpsState.textContent = 'GPS ON';
+  ui.coordText.textContent = `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`;
+  ui.mapFrame.src = `https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`;
 }
 
 function onPositionError(err) {
@@ -188,24 +203,58 @@ function initWeatherFromLocation() {
 }
 
 function launchSpotify() {
-  // If Spotify app is installed, this deep link opens it directly.
-  // Falls back to the web player if the app cannot be opened.
+  // Open installed Spotify first, then fallback to web playlist.
   const fallbackUrl = 'https://open.spotify.com/playlist/37i9dQZF1DX4dyzvuaRJ0n';
   const appUrl = 'spotify:playlist:37i9dQZF1DX4dyzvuaRJ0n';
+  let pageHidden = false;
 
-  const startedAt = Date.now();
+  const onVisibility = () => {
+    if (document.hidden) {
+      pageHidden = true;
+    }
+  };
+  document.addEventListener('visibilitychange', onVisibility, { once: true });
+
   window.location.href = appUrl;
 
   setTimeout(() => {
-    if (Date.now() - startedAt < 1700) {
-      window.open(fallbackUrl, '_blank', 'noopener');
+    if (!pageHidden && !document.hidden) {
+      window.location.href = fallbackUrl;
     }
   }, 1200);
+}
+
+function renderRecentCalls() {
+  ui.recentCalls.innerHTML = '';
+  contacts.forEach((contact) => {
+    const item = document.createElement('li');
+    item.innerHTML = `
+      <div>
+        <strong>${contact.name}</strong><br />
+        <small>${contact.at}</small>
+      </div>
+      <a href="tel:${contact.number.replace(/[^+\d]/g, '')}">${contact.number}</a>
+    `;
+    ui.recentCalls.appendChild(item);
+  });
+}
+
+function openCalls() {
+  renderRecentCalls();
+  ui.callPanel.classList.add('open');
+  ui.callPanel.setAttribute('aria-hidden', 'false');
+}
+
+function closeCalls() {
+  ui.callPanel.classList.remove('open');
+  ui.callPanel.setAttribute('aria-hidden', 'true');
 }
 
 ui.startBtn.addEventListener('click', startTrip);
 ui.stopBtn.addEventListener('click', stopTrip);
 ui.playMusicBtn?.addEventListener('click', launchSpotify);
+ui.callContactBtn?.addEventListener('click', openCalls);
+ui.closeCallsBtn?.addEventListener('click', closeCalls);
 
 updateClock();
 setInterval(updateClock, 1000);
@@ -216,3 +265,10 @@ setInterval(() => {
 }, 1000);
 
 initWeatherFromLocation();
+
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(({ coords }) => {
+    ui.coordText.textContent = `Lat: ${coords.latitude.toFixed(5)}, Lng: ${coords.longitude.toFixed(5)}`;
+    ui.mapFrame.src = `https://maps.google.com/maps?q=${coords.latitude},${coords.longitude}&z=15&output=embed`;
+  });
+}

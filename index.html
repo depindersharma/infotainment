@@ -47,10 +47,15 @@
               <h2>Last Trip</h2>
               <small id="tripStatus">Ready</small>
             </div>
-            <div class="trip-route">
-              <div class="stop">Start</div>
-              <div class="line"></div>
-              <div class="stop">Current</div>
+            <div class="map-wrap">
+              <iframe
+                id="mapFrame"
+                title="Current location map"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                src="https://maps.google.com/maps?q=0,0&z=14&output=embed"
+              ></iframe>
+              <div class="coord-text" id="coordText">Lat: --, Lng: --</div>
             </div>
             <div class="trip-stats">
               <div><span id="tripDuration">00:00</span><small>Duration</small></div>
@@ -85,7 +90,7 @@
           <div class="cmd-grid">
             <button class="cmd">Navigate Home</button>
             <button class="cmd" id="playMusicBtn">Play Music</button>
-            <button class="cmd">Call Contact</button>
+            <button class="cmd" id="callContactBtn">Call Contact</button>
             <button class="cmd">Find Charging</button>
           </div>
         </section>
@@ -98,6 +103,14 @@
         <div class="alert-box warning" id="weatherAlert">Waiting for weather data…</div>
       </aside>
     </main>
+
+    <section id="callPanel" class="call-panel" aria-label="Recent calls" aria-hidden="true">
+      <div class="call-header">
+        <h3>Recent Calls</h3>
+        <button id="closeCallsBtn" class="btn">Close</button>
+      </div>
+      <ul id="recentCalls" class="call-list"></ul>
+    </section>
 
     <script src="app.js"></script>
   </body>
