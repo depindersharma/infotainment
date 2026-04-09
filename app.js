@@ -17,6 +17,7 @@ const ui = {
   tripStatus: document.getElementById('tripStatus'),
   startBtn: document.getElementById('startBtn'),
   stopBtn: document.getElementById('stopBtn'),
+  playMusicBtn: document.getElementById('playMusicBtn'),
 };
 
 const state = {
@@ -186,8 +187,25 @@ function initWeatherFromLocation() {
   });
 }
 
+function launchSpotify() {
+  // If Spotify app is installed, this deep link opens it directly.
+  // Falls back to the web player if the app cannot be opened.
+  const fallbackUrl = 'https://open.spotify.com/playlist/37i9dQZF1DX4dyzvuaRJ0n';
+  const appUrl = 'spotify:playlist:37i9dQZF1DX4dyzvuaRJ0n';
+
+  const startedAt = Date.now();
+  window.location.href = appUrl;
+
+  setTimeout(() => {
+    if (Date.now() - startedAt < 1700) {
+      window.open(fallbackUrl, '_blank', 'noopener');
+    }
+  }, 1200);
+}
+
 ui.startBtn.addEventListener('click', startTrip);
 ui.stopBtn.addEventListener('click', stopTrip);
+ui.playMusicBtn?.addEventListener('click', launchSpotify);
 
 updateClock();
 setInterval(updateClock, 1000);
